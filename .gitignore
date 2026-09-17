@@ -1,0 +1,13 @@
+# Build output (Ant/NetBeans)
+/build/
+/dist/
+
+# Compiled classes anywhere
+*.class
+
+# NetBeans private/local project state
+nbproject/private/
+
+# OS/editor cruft
+.DS_Store
+*~

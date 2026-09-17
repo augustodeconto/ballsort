@@ -1,0 +1,35 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "BallSort (escolher cenário)",
+            "request": "launch",
+            "mainClass": "ballsort.BallSort",
+            "args": ["${input:gameFile}"]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "gameFile",
+            "type": "pickString",
+            "description": "Escolha o cenário (games/*.tubes) para rodar",
+            "options": [
+                "games/level1.tubes",
+                "games/level3.tubes",
+                "games/level21.tubes",
+                "games/level51.tubes",
+                "games/level106.tubes",
+                "games/level108.tubes",
+                "games/level111.tubes",
+                "games/level117.tubes",
+                "games/level129.tubes",
+                "games/level135.tubes",
+                "games/level159.tubes",
+                "games/level160.tubes",
+                "games/level337.tubes"
+            ],
+            "default": "games/level337.tubes"
+        }
+    ]
+}
