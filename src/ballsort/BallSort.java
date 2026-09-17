@@ -5,6 +5,8 @@
  */
 package ballsort;
 
+import ballsort.games.GameLoader;
+
 /**
  *
  * @author augusto.conto
@@ -15,8 +17,9 @@ public class BallSort {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        Board board = Board.defaultGame(337);
-               
+        String gameFile = args.length > 0 ? args[0] : "games/level337.tubes";
+        Board board = GameLoader.loadGame(gameFile);
+
         Solver solver = new Solver();
         solver.setStopOnFinal(true);
         

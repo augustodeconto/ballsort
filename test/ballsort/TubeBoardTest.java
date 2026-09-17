@@ -5,6 +5,7 @@
  */
 package ballsort;
 
+import ballsort.games.GameLoader;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -22,10 +23,7 @@ public class TubeBoardTest {
      */
     @Test
     public void testDefaultGame() {
-        int id = 1;
-        Board expResult = null;
-        Board result = Board.defaultGame(id);
-        //assertEquals(expResult, result);
+        Board result = GameLoader.loadGame("games/level1.tubes");
     }
     
 }
