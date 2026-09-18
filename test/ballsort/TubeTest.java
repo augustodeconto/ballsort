@@ -5,6 +5,7 @@
  */
 package ballsort;
 
+import ballsort.convolutional.TubeNode;
 import graphs.ConvolutionalGraph;
 import graphs.ConvolutionalVertex;
 import graphs.Graph;

@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package ballsort;
+package ballsort.convolutional;
 
+import ballsort.Tube;
 import java.util.Objects;
 
 /**

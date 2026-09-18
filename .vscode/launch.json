@@ -6,10 +6,17 @@
             "name": "BallSort (escolher cenário)",
             "request": "launch",
             "mainClass": "ballsort.BallSort",
-            "args": ["${input:gameFile}"]
+            "args": ["${input:gameFile}", "${input:representation}"]
         }
     ],
     "inputs": [
+        {
+            "id": "representation",
+            "type": "pickString",
+            "description": "Escolha a representação de estado",
+            "options": ["convolutional", "compact"],
+            "default": "compact"
+        },
         {
             "id": "gameFile",
             "type": "pickString",

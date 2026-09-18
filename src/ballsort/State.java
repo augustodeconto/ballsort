@@ -5,7 +5,6 @@
  */
 package ballsort;
 
-import graphs.ConvolutionalVertex;
 import java.util.Objects;
 
 /**
@@ -13,16 +12,16 @@ import java.util.Objects;
  * @author augusto.conto
  */
 public class State {
-    public State               parent     = null;
-    public ConvolutionalVertex vertex;
-    public TubeTransition      transition = null;
+    public State       parent     = null;
+    public SolverState vertex;
+    public String      label      = null;
     public double  entropy    = Double.POSITIVE_INFINITY;
     public boolean isFinal    = false;
     public int     visitCount = 0;
     static long    uidCounter;
     public final   long uid   = ++uidCounter;
 
-    public State(ConvolutionalVertex vertex) {
+    public State(SolverState vertex) {
         this.vertex = vertex;
     }
 
@@ -38,7 +37,7 @@ public class State {
     
     @Override
     public String toString() {
-        return "--" + transition + "-->" + vertex + ", entropy=" + entropy + ", isFinal=" + isFinal;
+        return "--" + label + "-->" + vertex + ", entropy=" + entropy + ", isFinal=" + isFinal;
     }
 
     @Override

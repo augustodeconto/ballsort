@@ -5,6 +5,8 @@
  */
 package ballsort;
 
+import ballsort.convolutional.TubeNode;
+import ballsort.convolutional.TubeTransition;
 import graphs.Graph;
 import graphs.LinkedGraph;
 import java.util.ArrayList;

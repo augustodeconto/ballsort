@@ -5,12 +5,9 @@
  */
 package ballsort;
 
-import graphs.AdjacentEdge;
-import graphs.ConvolutionalVertex;
-import graphs.Graph;
 import graphs.LinkedGraph;
 import java.util.LinkedList;
-import java.util.Set;
+import java.util.List;
 import java.util.Stack;
 
 /**
@@ -44,75 +41,46 @@ public class Solver {
     public void setPrintStepBoard(int printStepBoard) {
         this.printStepBoard = printStepBoard;
     }
-    
+
     // counters
     private int visitCount = 0;
     private int maxDepth   = 0;
     private int finalCount = 0;
 
     // algorithm data structures
-    private Board              board;
-    private Graph              model;
+    private int                sizeHint;
     private LinkedList<State>  backlog;
     private LinkedList<State>  goldBacklog;
     private LinkedGraph<State> visited;
-    
-    public void solve(Board board) {
-        this.board = board;
-        this.model = null;
-        
+
+    public void solve(SolverState initialState) {
         backlog     = new LinkedList<>();
         goldBacklog = new LinkedList<>();
         visited     = new LinkedGraph<>();
 
-        if (!board.isValidGame()) {
+        if (!initialState.isValid()) {
             System.out.println("Invalid game");
             return;
         }
-        model = board.getModel();
-        Object startingState = model.getInitialVertex();
-        backlogAdd(new State((ConvolutionalVertex)startingState));
-        
+        sizeHint = initialState.sizeHint();
+
+        State root = new State(initialState);
+        root.isFinal = initialState.isFinal();
+        root.entropy = initialState.entropy();
+        backlogAdd(root);
+
         int     iteration     = 0;
         boolean haltExecution = false;
-        long    timestampPrev = System.currentTimeMillis();
-        while (iteration++ < maxIterations && 
+        long    previousTime = System.currentTimeMillis();
+        while (iteration++ < maxIterations &&
                hasBacklog() &&
                !haltExecution) {
 
             // select state
-            State state = backlogPoll();
+            State state = selectStateToVisit();
 
-            //<editor-fold defaultstate="collapsed" desc="print">
-            long    timestampCurr = System.currentTimeMillis();
-            if (iteration < 100 || (iteration % printStepHead) == 0) {
-                //#18 Score:34.0  Iter:5(66/62) 22ms 
-                double firstScore = 0, lastScore = 0;
-                if (backlog.size() > 0) {
-                    firstScore = backlog.getFirst().entropy;
-                    lastScore = backlog.getLast().entropy;
-                }
-                            
-                System.out.println(
-                        "" + iteration +
-                        " Id:" + state.uid +
-                        " Deph:" + state.getDepth() +
-                        " Entropy:" + state.entropy +
-                                "     Visited:" + visitCount +
-                                " Backlog:" + backlog.size() +
-                                "  [" + firstScore +
-                                ", " + lastScore +
-                                "]" +
-                                "   " + (timestampCurr - timestampPrev) + "ms"
-               );
-                timestampPrev = timestampCurr;
-            }
-            if (iteration % printStepBoard == 0) {
-                board.printBoard(state.vertex);
-            }
-            //System.out.println(state.vertex);
-            //</editor-fold>
-            
+            previousTime = printSolveStatus(iteration, previousTime, state);
+
             state.visitCount++;
             if (visited.hasVertex(state)) {
                 if ((iteration % printStepBoard) == 0)
@@ -121,12 +89,12 @@ public class Solver {
             else {
                 visited.addVertex(state);
                 if (state.parent != null) {
-                    visited.addEdge(state.parent, state, state.transition);
+                    visited.addEdge(state.parent, state, state.label);
                 }
-            
+
                 if (state.isFinal) {
                     finalCount++;
-                    if (stopOnFinal) { 
+                    if (stopOnFinal) {
                         haltExecution = true;
                     }
                     printPath(state);
@@ -134,41 +102,59 @@ public class Solver {
                 }
                 else { // not final
                     StringBuilder sb = new StringBuilder();
-                    Set<Object> adjacent = model.getAdjacentEdges(state.vertex);
-                    for (Object edge : adjacent) {
-                        State analyzed;
-                        analyzed = analyzeNode(edge, state);
+                    List<Move> moves = state.vertex.neighbors();
+                    for (Move move : moves) {
+                        State analyzed = new State(move.state);
+                        analyzed.parent = state;
+                        analyzed.label = move.label;
+                        analyzed.isFinal = move.state.isFinal();
+                        analyzed.entropy = move.state.entropy();
+                        visitCount++;
                         backlogAdd(analyzed);
 //                        System.out.println(" " + analyzed);
                         sb.append("#").append(analyzed.uid).append("(").append((int)analyzed.entropy).append(") ");
                     }
                     if ((iteration % printStepBoard) == 0)
-                        System.out.println("Append " + adjacent.size() + ":" + sb.toString());
+                        System.out.println("Append " + moves.size() + ":" + sb.toString());
                 }
             }
         }
-        
-        if (iteration >= maxIterations) 
+
+        if (iteration >= maxIterations)
             System.out.println("Maximum iterations reached " + iteration);
     }
 
-    private State analyzeNode(Object edge, State parentState) {
-        State state = new State();
-        visitCount++;
-        
-        if (edge instanceof ConvolutionalVertex) {
-            state.vertex     = (ConvolutionalVertex) edge;
-            state.parent     = null;
-            state.transition = null;
-        } else if (edge instanceof AdjacentEdge) {
-            state.vertex     = (ConvolutionalVertex)((AdjacentEdge)edge).getVertice();
-            state.parent     = parentState;
-            state.transition = (TubeTransition)((AdjacentEdge)edge).getValue();
+    private long printSolveStatus(int iteration, long previousTime, State state) {
+        //<editor-fold defaultstate="collapsed" desc="print">
+        long    currentTime = System.currentTimeMillis();
+        if (iteration < 100 || (iteration % printStepHead) == 0) {
+            //#18 Score:34.0  Iter:5(66/62) 22ms
+            double firstScore = 0, lastScore = 0;
+            if (backlog.size() > 0) {
+                firstScore = backlog.getFirst().entropy;
+                lastScore = backlog.getLast().entropy;
+            }
+
+            System.out.println(
+                    "" + iteration +
+                    " Id:" + state.uid +
+                    " Deph:" + state.getDepth() +
+                    " Entropy:" + state.entropy +
+                            "     Visited:" + visitCount +
+                            " Backlog:" + backlog.size() +
+                            "  [" + firstScore +
+                            ", " + lastScore +
+                            "]" +
+                            "   " + (currentTime - previousTime) + "ms"
+           );
+            previousTime = currentTime;
         }
-        state.isFinal   = model.isFinalVertex(state.vertex);
-        state.entropy = getDisorderLevel(state);
-        
-        return state;
+        if (iteration % printStepBoard == 0) {
+            state.vertex.printBoard();
+        }
+        //System.out.println(state.vertex);
+        //</editor-fold>
+        return previousTime;
     }
 
     public enum Strategy {
@@ -176,35 +162,35 @@ public class Solver {
         BFS,
         Entropy
     };
-    
+
     private boolean hasBacklog() {
         return (!backlog.isEmpty() || !goldBacklog.isEmpty());
     }
-    
+
     private int priorityMaxDepth = -1;
-    
+
     private void backlogAdd(State state) {
         boolean isPriority = false;
-        
+
         if (priorityMaxDepth <= 0) {
-            priorityMaxDepth = board.tubeCount() / 3;
+            priorityMaxDepth = sizeHint / 3;
             if (priorityMaxDepth < 1) priorityMaxDepth = 1;
             if (priorityMaxDepth > 5) priorityMaxDepth = 5;
         }
         isPriority = state.isFinal || state.getDepth() <= priorityMaxDepth;
         // another ruled to make state prioritary ...
-        
+
         if (isPriority) {
             goldBacklog.addFirst(state);
         }
         else {
-            if ((strategy.equals(Strategy.DFS)) || 
-                (!backlog.isEmpty() && 
+            if ((strategy.equals(Strategy.DFS)) ||
+                (!backlog.isEmpty() &&
                   state.entropy <= backlog.peekFirst().entropy)) {
                 backlog.addFirst(state);
             }
-            else if ((strategy.equals(Strategy.BFS)) || 
-                     (!backlog.isEmpty() && 
+            else if ((strategy.equals(Strategy.BFS)) ||
+                     (!backlog.isEmpty() &&
                        state.entropy >= backlog.peekLast().entropy)) {
                 backlog.addLast(state);
             }
@@ -215,17 +201,17 @@ public class Solver {
                             state.entropy < backlog.get(i).entropy) {
                         break;
                     }
-                }   
+                }
                 backlog.add(i, state);
             }
         }
     }
 
-    private State backlogPoll() {
+    private State selectStateToVisit() {
         if (!goldBacklog.isEmpty()) {
             return goldBacklog.poll();
         }
-        
+
         // backlog is sorted in entropy level
         return backlog.pollFirst();
     }
@@ -233,7 +219,7 @@ public class Solver {
     private void printPath(State finalState ){
         Stack<State> stack = new Stack<>();
         int moves;
-        
+
         State state;
         state = finalState;
         do {
@@ -241,37 +227,19 @@ public class Solver {
             state = state.parent;
         } while (state != null);
         moves = stack.size() - 1;
-        
+
         while (!stack.isEmpty()) {
             state = stack.pop();
-            if (state.transition == null) {
+            if (state.label == null) {
                 System.out.println("#" + state.uid);
             }
             else {
-                System.out.println("--" + state.transition + "--> #" + state.uid);
+                System.out.println("--" + state.label + "--> #" + state.uid);
             }
         }
         System.out.println("moves:" + moves);
     }
 
-    private double getDisorderLevel(State state) {
-        double disorder = 0.0;
-        for (int b = 0; b < board.tubeCount(); b++) {
-            String[] colors = board.getTube(b).getBalls((TubeNode)state.vertex.getInner(b));
-            
-            for (int i = 1; i < colors.length; i++) {
-                if (!colors[i].equals(colors[i-1]))
-                    disorder += 1.0;
-                if ("".equals(colors[i])) {
-                    break;
-                }
-            }
-            
-        }
-        return disorder;
-    }
-    
-     
     public int getVisitCount() {
         return visitCount;
     }
@@ -282,14 +250,14 @@ public class Solver {
 
     public int getFinalCount() {
         return finalCount;
-    }    
-    
+    }
+
     public void onVertexEnter(Object vertex, boolean isFinal, boolean visited) {
-        System.out.println(" visiting:" + vertex + 
-                   " final:" + isFinal + 
+        System.out.println(" visiting:" + vertex +
+                   " final:" + isFinal +
                    " visited:" + visited);
     }
-    
-    
-    
+
+
+
 }

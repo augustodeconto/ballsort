@@ -5,11 +5,10 @@
  */
 package ballsort;
 
-import graphs.ConvolutionalGraph;
-import graphs.ConvolutionalVertex;
-import graphs.Graph;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -51,42 +50,12 @@ public class Board {
     public int tubeCount() {
         return tubes.size();
     }
-    
-    public void printBoard(ConvolutionalVertex vertex) {
-        String[][] balls = new String[tubeCount()][];
-        int maxSize = 0;
-        for (int t = 0; t < tubes.size(); t++) {
-            String[] b = tubes.get(t).getBalls((TubeNode)vertex.getInner(t));
-            balls[t] = b;
-            if (b.length > maxSize) maxSize = b.length;
-        }
-        
-        StringBuilder sb = new StringBuilder();
-        for (int i = maxSize-1; i >= 0; i--) {
-            sb.append("   ");
-            for (int t = 0; t < tubes.size(); t++) {
-                if (balls[t][i].equals(""))
-                    sb.append("  ");
-                else
-                    sb.append(balls[t][i]);
-                sb.append("   ");
-            }
-            if (i > 0) sb.append("\n");
-        }
-        System.out.println(sb.toString());
-    }
-    
-    public ConvolutionalGraph getModel() {
-        ConvolutionalGraph ballSortModel = new ConvolutionalGraph();
-        
-        for (Tube t : tubes) {
-            Graph<TubeNode> tubeModel = t.createModel(tubes);
-            ballSortModel.appendInnerGraph(tubeModel);
-        }
-        return ballSortModel;
+
+    public List<Tube> getTubes() {
+        return Collections.unmodifiableList(tubes);
     }
 
-    boolean isValidGame() {
+    public boolean isValidGame() {
         boolean isValid = true;
 
         HashMap<String, Integer> ballCounter = new HashMap<>();

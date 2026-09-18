@@ -5,6 +5,9 @@
  */
 package ballsort;
 
+import ballsort.compact.BoardState;
+import ballsort.compact.ColorTable;
+import ballsort.convolutional.ConvolutionalSolverState;
 import ballsort.games.GameLoader;
 
 /**
@@ -14,16 +17,21 @@ import ballsort.games.GameLoader;
 public class BallSort {
 
     /**
-     * @param args the command line arguments
+     * @param args the command line arguments: [gameFile] [representation: "conv"|"convolutional"|"comp"|"compact"]
      */
     public static void main(String[] args) {
         String gameFile = args.length > 0 ? args[0] : "games/level337.tubes";
+        String repr = args.length > 1 ? args[1] : "conv";
         Board board = GameLoader.loadGame(gameFile);
+
+        SolverState initial = "comp".equals(repr) || "compact".equals(repr)
+                ? BoardState.initialFrom(board, ColorTable.fromBoard(board))
+                : ConvolutionalSolverState.initialFrom(board);
 
         Solver solver = new Solver();
         solver.setStopOnFinal(true);
-        
-        solver.solve(board);
+
+        solver.solve(initial);
         System.out.println("finalCount:" + solver.getFinalCount() +
                 " maxDepth:" + solver.getMaxDepth() +
                 " visitCount:" + solver.getVisitCount());
