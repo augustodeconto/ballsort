@@ -1,13 +1,13 @@
 package ballsort.compact;
 
 import ballsort.Board;
-import ballsort.Move;
-import ballsort.SolverState;
+import ballsort.GameTransition;
+import ballsort.GamePosition;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public final class BoardState implements SolverState {
+public final class BoardState implements GamePosition {
     private final byte[] cells;
     private final int tubeCount;
     private final int capacity;
@@ -131,7 +131,7 @@ public final class BoardState implements SolverState {
      * with room to spare), paired with a human-readable move label.
      */
     @Override
-    public List<Move> neighbors() {
+    public List<GameTransition> sucessors() {
         int[] topPos = new int[tubeCount];
         byte[] topColor = new byte[tubeCount];
         for (int t = 0; t < tubeCount; t++) {
@@ -139,7 +139,7 @@ public final class BoardState implements SolverState {
             topColor[t] = topPos[t] < 0 ? 0 : cells[t * capacity + topPos[t]];
         }
 
-        List<Move> result = new ArrayList<>();
+        List<GameTransition> result = new ArrayList<>();
         for (int i = 0; i < tubeCount; i++) {
             if (topPos[i] < 0) {
                 continue;
@@ -160,7 +160,7 @@ public final class BoardState implements SolverState {
 
                 String label = "<T" + (i + 1) + ", T" + (j + 1) + ", " + (topPos[j] + 2) + ", "
                         + table.colorFor(color) + ">";
-                result.add(new Move(next, label));
+                result.add(new GameTransition(next, label));
             }
         }
         return result;

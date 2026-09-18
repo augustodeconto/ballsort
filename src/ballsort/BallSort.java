@@ -24,7 +24,7 @@ public class BallSort {
         String repr = args.length > 1 ? args[1] : "conv";
         Board board = GameLoader.loadGame(gameFile);
 
-        SolverState initial = "comp".equals(repr) || "compact".equals(repr)
+        GamePosition initial = "comp".equals(repr) || "compact".equals(repr)
                 ? BoardState.initialFrom(board, ColorTable.fromBoard(board))
                 : ConvolutionalSolverState.initialFrom(board);
 

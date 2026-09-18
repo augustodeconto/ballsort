@@ -2,11 +2,16 @@ package ballsort;
 
 import java.util.List;
 
-public interface SolverState {
+public interface GamePosition {
     boolean isValid();
+
     boolean isFinal();
+
     double entropy();
+
     int sizeHint();
-    List<Move> neighbors();
+
+    List<GameTransition> sucessors();
+
     void printBoard();
 }

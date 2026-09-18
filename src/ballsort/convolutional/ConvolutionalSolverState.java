@@ -1,8 +1,8 @@
 package ballsort.convolutional;
 
 import ballsort.Board;
-import ballsort.Move;
-import ballsort.SolverState;
+import ballsort.GameTransition;
+import ballsort.GamePosition;
 import ballsort.Tube;
 import graphs.AdjacentEdge;
 import graphs.ConvolutionalGraph;
@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public final class ConvolutionalSolverState implements SolverState {
+public final class ConvolutionalSolverState implements GamePosition {
     private final ConvolutionalVertex vertex;
     private final Board board;
     private final ConvolutionalGraph model;
@@ -100,12 +100,12 @@ public final class ConvolutionalSolverState implements SolverState {
     }
 
     @Override
-    public List<Move> neighbors() {
+    public List<GameTransition> sucessors() {
         Set<AdjacentEdge> adjacent = model.getAdjacentEdges(vertex);
-        List<Move> moves = new ArrayList<>(adjacent.size());
+        List<GameTransition> moves = new ArrayList<>(adjacent.size());
         for (AdjacentEdge edge : adjacent) {
             ConvolutionalVertex next = (ConvolutionalVertex) edge.getVertice();
-            moves.add(new Move(new ConvolutionalSolverState(next, board, model), edge.getValue().toString()));
+            moves.add(new GameTransition(new ConvolutionalSolverState(next, board, model), edge.getValue().toString()));
         }
         return moves;
     }
